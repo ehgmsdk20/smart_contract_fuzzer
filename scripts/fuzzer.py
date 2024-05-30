@@ -5,6 +5,7 @@ from brownie import accounts, project
 from slither.slither import SlitherError
 from brownie.network.state import TxHistory
 
+gas_limit = 10000
 # 스마트 컨트랙트 컴파일 및 배포
 def deploy_contract():
     proj = project.load('.', name="VulnerableProject")
@@ -66,7 +67,12 @@ def fuzz_contract(contract, functions):
         except Exception as e:
             tx = history[-1]
             tx.info()
+            analyze_gas_usage(tx, case)
             print(f"Error encountered during fuzzing with {case}: {e}")
+
+def analyze_gas_usage(tx, case):
+    if tx.gas_used > gas_limit:
+        print(f"Warning: High gas usage({tx.gas_used}) for {case}")
 
 # 메인 함수
 def main():
