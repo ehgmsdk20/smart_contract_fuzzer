@@ -1,6 +1,7 @@
 import json
-from solidity_parser import parser
+from slither import Slither
 from brownie import accounts, project
+from slither.slither import SlitherError
 
 # 스마트 컨트랙트 컴파일 및 배포
 def deploy_contract():
@@ -10,19 +11,23 @@ def deploy_contract():
     return Vulnerable.deploy({'from': accounts[0]})
 
 # 함수 정보 추출 함수
-def extract_functions(solidity_code):
-    ast = parser.parse(solidity_code)
-    print(ast)
-    functions = []
-    for item in ast['children']:
-        if item['type'] == 'ContractDefinition':
-            for sub_item in item['subNodes']:
-                if sub_item['type'] == 'FunctionDefinition':
-                    func_name = sub_item['name']
-                    parameters = sub_item['parameters']['parameters']
-                    param_list = [(param['typeName']['name'], param['name']) for param in parameters]
-                    functions.append({'name': func_name, 'parameters': param_list})
-    return functions
+def extract_functions(contract_path):
+    try:
+        slither = Slither(contract_path)
+        contracts = slither.contracts
+        if not contracts:
+            print(f"No contracts found in {contract_path}")
+            return []
+        contract = contracts[0]  # Assuming there's only one contract
+        functions = []
+        for func in contract.functions:
+            func_name = func.name
+            param_list = [(param.type.type, param.name) for param in func.parameters]
+            functions.append({'name': func_name, 'parameters': param_list})
+        return functions
+    except SlitherError as e:
+        print(f"Error while parsing the contract: {e}")
+        return []
 
 # 퍼징 함수
 def fuzz_contract(contract, functions):
@@ -48,8 +53,13 @@ def generate_test_cases(functions):
     return test_cases
 
 # 메인 함수
-def main():    
-    functions = extract_functions("contracts/Vulnerable.sol")
+def main():
+    contract_path = "contracts/Vulnerable.sol"
+    functions = extract_functions(contract_path)
+    if not functions:
+        print("No functions extracted. Exiting...")
+        return
+    print(f"Extracted functions: {json.dumps(functions, indent=2)}")
     contract = deploy_contract()
     fuzz_contract(contract, functions)
 
