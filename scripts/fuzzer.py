@@ -58,15 +58,14 @@ def generate_test_cases(functions, num_cases=100):
 # 퍼징 함수
 def fuzz_contract(contract, functions):
     test_cases = generate_test_cases(functions)
+    history = TxHistory()
     for case in test_cases:
         try:
             print(f"Executing: {case}")
             eval(f'contract.{case}({{"from": accounts[1]}})')
-            # 트랜잭션 기록 확인
-            tx = TxHistory[-1]
-            if tx.status == 0:
-                print(f"Transaction failed for {case}")
         except Exception as e:
+            tx = history[-1]
+            tx.info()
             print(f"Error encountered during fuzzing with {case}: {e}")
 
 # 메인 함수
