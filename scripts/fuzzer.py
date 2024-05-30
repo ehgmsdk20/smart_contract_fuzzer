@@ -3,6 +3,7 @@ import random
 from slither import Slither
 from brownie import accounts, project
 from slither.slither import SlitherError
+from brownie.network.state import TxHistory
 
 # 스마트 컨트랙트 컴파일 및 배포
 def deploy_contract():
@@ -59,7 +60,12 @@ def fuzz_contract(contract, functions):
     test_cases = generate_test_cases(functions)
     for case in test_cases:
         try:
+            print(f"Executing: {case}")
             eval(f'contract.{case}({{"from": accounts[1]}})')
+            # 트랜잭션 기록 확인
+            tx = TxHistory[-1]
+            if tx.status == 0:
+                print(f"Transaction failed for {case}")
         except Exception as e:
             print(f"Error encountered during fuzzing with {case}: {e}")
 
