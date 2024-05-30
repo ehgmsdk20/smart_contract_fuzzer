@@ -1,0 +1,5 @@
+dependencies:
+- smartcontractkit/[email protected]
+compiler:
+  solc:
+    version: 0.8.0
