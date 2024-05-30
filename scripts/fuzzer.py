@@ -12,6 +12,7 @@ def deploy_contract():
 # 함수 정보 추출 함수
 def extract_functions(solidity_code):
     ast = parser.parse(solidity_code)
+    print(ast)
     functions = []
     for item in ast['children']:
         if item['type'] == 'ContractDefinition':
@@ -47,11 +48,8 @@ def generate_test_cases(functions):
     return test_cases
 
 # 메인 함수
-def main():
-    with open('contracts/Vulnerable.sol', 'r') as file:
-        solidity_code = file.read()
-    
-    functions = extract_functions(solidity_code)
+def main():    
+    functions = extract_functions("contracts/Vulnerable.sol")
     contract = deploy_contract()
     fuzz_contract(contract, functions)
 
