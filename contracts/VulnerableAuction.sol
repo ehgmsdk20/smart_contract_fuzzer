@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract Auction {
+contract VulnerableAuction {
     struct Bid {
         address bidder;
         uint256 amount;
@@ -14,9 +14,9 @@ contract Auction {
 
     event AuctionEnded(address winner, uint256 amount);
 
-    constructor(uint256 _biddingTime) {
+    constructor() {
         owner = msg.sender;
-        auctionEndTime = block.timestamp + _biddingTime;
+        auctionEndTime = block.timestamp + 200000;
     }
 
     function placeBid() public payable {

@@ -5,24 +5,20 @@ from brownie import accounts, project, network
 from slither.slither import SlitherError
 from brownie.network.state import TxHistory
 import os
+import glob
 
 gas_limit = 100000  # 수정된 가스 한도
-output_folder = "./output"
-error_output_file = os.path.join(output_folder, "error_output.txt")
-gas_usage_file = os.path.join(output_folder, "gas_usage.txt")
+output_base_folder = "./output"
 
-if not os.path.exists(output_folder):
-    os.makedirs(output_folder)
-
-error_logs = []
-gas_usages = []
+if not os.path.exists(output_base_folder):
+    os.makedirs(output_base_folder)
 
 # 스마트 컨트랙트 컴파일 및 배포
-def deploy_contract():
-    proj = project.load('.', name="VulnerableProject")
+def deploy_contract(contract_name):
+    proj = project.load('.', name=contract_name)
     proj.load_config()
-    Vulnerable = proj.Vulnerable
-    return Vulnerable.deploy({'from': accounts[0]})
+    Contract = getattr(proj, contract_name)
+    return Contract.deploy({'from': accounts[0]})
 
 # 함수 정보 추출 함수
 def extract_functions(contract_path):
@@ -95,6 +91,8 @@ def generate_test_cases(functions, num_cases=5):
 
 # 퍼징 함수
 def fuzz_contract(contract, functions):
+    error_logs = []
+    gas_usages = []
     test_cases = generate_test_cases(functions, num_cases=20)  # 더 많은 테스트 케이스 생성
     history = TxHistory()
 
@@ -159,6 +157,7 @@ def fuzz_contract(contract, functions):
                 "transaction_hash": tx.txid if tx else "N/A"
             }
             error_logs.append(error_log)
+    return error_logs, gas_usages
 
 def analyze_gas_usage(tx, case):
     if tx.gas_used > gas_limit:
@@ -166,39 +165,57 @@ def analyze_gas_usage(tx, case):
 
 # 프로퍼티 기반 테스트
 def property_based_tests(contract):
+    error_logs = []
     try:
-        # Example property: balances for all accounts should never be negative
-        for account in accounts[:3]:
-            balance = contract.balances(account)
-            assert balance >= 0, f"Account {account} has negative balance"
-        print("Property test passed: All balances are non-negative.")
+        if (getattr(contract, "balances", None)):
+            # Example property: balances for all accounts should never be negative
+            for account in accounts[:3]:
+                balance = contract.balances(account)
+                assert balance >= 0, f"Account {account} has negative balance"
+            print("Property test passed: All balances are non-negative.")
     except Exception as e:
         error_logs.append({
             "error": f"Property test failed: {e}"
         })
+    return error_logs
 
 # 메인 함수
 def main():
     if not network.is_connected():
         network.connect('development')  # 로컬 개발 네트워크에 연결
-    contract_path = "contracts/Vulnerable.sol"
-    functions = extract_functions(contract_path)
-    if not functions:
-        print("No functions extracted. Exiting...")
+
+    contract_files = glob.glob("contracts/*.sol")
+    if not contract_files:
+        print("No contract files found. Exiting...")
         return
-    contract = deploy_contract()
-    fuzz_contract(contract, functions)
-    property_based_tests(contract)
+    for contract_file in contract_files:
+        contract_name = os.path.splitext(os.path.basename(contract_file))[0]
+        print(f"Testing contract: {contract_name}")
 
-    with open(error_output_file, 'w') as f:
-        for log in error_logs:
-            f.write(json.dumps(log) + "\n")
-        print(f"Error logs saved to {error_output_file}")
+        contract_output_folder = os.path.join(output_base_folder, contract_name)
+        if not os.path.exists(contract_output_folder):
+            os.makedirs(contract_output_folder)
+        error_output_file = os.path.join(contract_output_folder, "error_output.txt")
+        gas_usage_file = os.path.join(contract_output_folder, "gas_usage.txt")
 
-    with open(gas_usage_file, 'w') as f:
-        for usage in gas_usages:
-            f.write(json.dumps(usage) + "\n")
-        print(f"Gas usage logs saved to {gas_usage_file}")
+        functions = extract_functions(contract_file)
+        if not functions:
+            print(f"No functions extracted for {contract_name}. Skipping...")
+            continue
+
+        contract = deploy_contract(contract_name)
+        error_logs, gas_usages =fuzz_contract(contract, functions)
+        pbt_error_logs = property_based_tests(contract)
+
+        with open(error_output_file, 'w') as f:
+            for log in error_logs + pbt_error_logs:
+                f.write(json.dumps(log) + "\n")
+            print(f"Error logs saved to {error_output_file}")
+
+        with open(gas_usage_file, 'w') as f:
+            for usage in gas_usages:
+                f.write(json.dumps(usage) + "\n")
+            print(f"Gas usage logs saved to {gas_usage_file}")
 
 if __name__ == "__main__":
     main()
