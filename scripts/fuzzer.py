@@ -6,6 +6,7 @@ from slither.slither import SlitherError
 from brownie.network.state import TxHistory
 
 gas_limit = 10000
+
 # 스마트 컨트랙트 컴파일 및 배포
 def deploy_contract():
     proj = project.load('.', name="VulnerableProject")
@@ -41,7 +42,7 @@ def random_uint256():
     return random.randint(0, 2**256 - 1)
 
 # 테스트 케이스 생성 함수
-def generate_test_cases(functions, num_cases=100):
+def generate_test_cases(functions, num_cases=5):
     test_cases = []
     for func in functions:
         if func['name'] != 'constructor':
@@ -50,10 +51,10 @@ def generate_test_cases(functions, num_cases=100):
                 for param in func['parameters']:
                     param_type, param_name = param
                     if param_type == 'address':
-                        params.append(f"'{random_address()}'")
+                        params.append(random_address())
                     elif param_type == 'uint256':
-                        params.append(f"{random_uint256()}")
-                test_cases.append(f"{func['name']}({', '.join(params)})")
+                        params.append(random_uint256())
+                test_cases.append((func['name'], params))
     return test_cases
 
 # 퍼징 함수
@@ -61,14 +62,19 @@ def fuzz_contract(contract, functions):
     test_cases = generate_test_cases(functions)
     history = TxHistory()
     for case in test_cases:
+        func_name, params = case
         try:
-            print(f"Executing: {case}")
-            eval(f'contract.{case}({{"from": accounts[1]}})')
+            print(f"Executing: {func_name}({', '.join(map(str, params))})")
+            func = getattr(contract, func_name)
+            if params:
+                func(*params, {'from': accounts[1]})
+            else:
+                func({'from': accounts[1]})
         except Exception as e:
             tx = history[-1]
             tx.info()
-            analyze_gas_usage(tx, case)
-            print(f"Error encountered during fuzzing with {case}: {e}")
+            analyze_gas_usage(tx, f"{func_name}({', '.join(map(str, params))})")
+            print(f"Error encountered during fuzzing with {func_name}({', '.join(map(str, params))}): {e}")
 
 def analyze_gas_usage(tx, case):
     if tx.gas_used > gas_limit:
