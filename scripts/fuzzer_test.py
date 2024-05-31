@@ -6,6 +6,10 @@ from slither.slither import SlitherError
 from brownie.network.state import TxHistory
 import os
 import glob
+import matplotlib.pyplot as plt
+import numpy as np
+from collections import defaultdict
+
 
 gas_limit = 100000  # 수정된 가스 한도
 output_base_folder = "./output"
@@ -89,6 +93,35 @@ def generate_test_cases(functions, num_cases=5):
                 test_cases.append((func['name'], params))
     return test_cases
 
+def plot(gas_usages):
+    function_gas_usage = defaultdict(list)
+    for tx in gas_usages:
+        function_gas_usage[tx['function']].append(tx['gas_used'])
+    # Calculate expected gas usage (mean) for each function
+    expected_gas_usage = {func: np.mean(gas) for func, gas in function_gas_usage.items()}
+
+    # Plot the data
+    plt.figure(figsize=(14, 7))
+
+    # Define number of subplots based on unique functions
+    num_functions = len(function_gas_usage)
+    for i, (func, gas_usage) in enumerate(function_gas_usage.items(), 1):
+        plt.subplot(1, num_functions, i)
+        plt.hist(gas_usage, bins=20, alpha=0.75, label=f'{func} Gas Usage')
+        plt.axvline(expected_gas_usage[func], color='red', linestyle='dashed', linewidth=2, label='Expected Gas Usage')
+        plt.title(f'{func.capitalize()} Function Gas Usage')
+        plt.xlabel('Gas Used')
+        plt.ylabel('Frequency')
+        plt.legend()
+
+        # Highlight points above the expected threshold
+        for gas in gas_usage:
+            if gas > expected_gas_usage[func] * 1.1:  # 10% above the mean
+                plt.annotate('Above expected', xy=(gas, 0), xytext=(gas, 0.5),
+                            arrowprops=dict(facecolor='red', shrink=0.05))
+
+    plt.tight_layout()
+    plt.show()
 # 퍼징 함수
 def fuzz_contract(contract, functions):
     error_logs = []
@@ -218,6 +251,7 @@ def main():
         contract = deploy_contract(contract_name)
         error_logs, gas_usages = fuzz_contract(contract, functions)
         pbt_error_logs = property_based_tests(contract)
+        plot(gas_usages)
 
         with open(error_output_file, 'w') as f:
             for log in error_logs + pbt_error_logs:
