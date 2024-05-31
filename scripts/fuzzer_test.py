@@ -8,12 +8,14 @@ import os
 
 gas_limit = 100000  # 수정된 가스 한도
 output_folder = "./output"
-output_file = os.path.join(output_folder, "output.txt")
+error_output_file = os.path.join(output_folder, "error_output.txt")
+gas_usage_file = os.path.join(output_folder, "gas_usage.txt")
 
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
 error_logs = []
+gas_usages = []
 
 # 스마트 컨트랙트 컴파일 및 배포
 def deploy_contract():
@@ -97,12 +99,24 @@ def fuzz_contract(contract, functions):
     history = TxHistory()
 
     # 초기 입금 설정
-    deposit_amount = 3*10**18  # 1 Ether
+    deposit_amount = 3*10**18  # 3 Ether
     for i in range(1, 3):  # accounts[1]과 accounts[2]에 입금
         try:
-            contract.deposit({'from': accounts[i], 'value': deposit_amount})
+            tx = contract.deposit({'from': accounts[i], 'value': deposit_amount})
+            gas_usages.append({
+                "function": "deposit",
+                "params": [deposit_amount],
+                "gas_used": tx.gas_used,
+                "transaction_hash": tx.txid
+            })
         except Exception as e:
             tx = history[-1] if len(history) > 0 else None
+            gas_usages.append({
+                "function": "deposit",
+                "params": [deposit_amount],
+                "gas_used": tx.gas_used,
+                "transaction_hash": tx.txid
+            })
             error_log = {
                 "function": "deposit",
                 "params": [deposit_amount],
@@ -119,11 +133,23 @@ def fuzz_contract(contract, functions):
         try:
             func = getattr(contract, func_name)
             if params:
-                func(*params, {'from': accounts[1]})
+                tx = func(*params, {'from': accounts[1]})
             else:
-                func({'from': accounts[1]})
+                tx = func({'from': accounts[1]})
+            gas_usages.append({
+                "function": func_name,
+                "params": params,
+                "gas_used": tx.gas_used,
+                "transaction_hash": tx.txid
+            })
         except Exception as e:
             tx = history[-1] if len(history) > 0 else None
+            gas_usages.append({
+                "function": func_name,
+                "params": params,
+                "gas_used": tx.gas_used,
+                "transaction_hash": tx.txid
+            })
             error_log = {
                 "function": func_name,
                 "params": params,
@@ -164,10 +190,15 @@ def main():
     fuzz_contract(contract, functions)
     property_based_tests(contract)
 
-    with open(output_file, 'w') as f:
+    with open(error_output_file, 'w') as f:
         for log in error_logs:
             f.write(json.dumps(log) + "\n")
-        print(f"Error logs saved to {output_file}")
+        print(f"Error logs saved to {error_output_file}")
+
+    with open(gas_usage_file, 'w') as f:
+        for usage in gas_usages:
+            f.write(json.dumps(usage) + "\n")
+        print(f"Gas usage logs saved to {gas_usage_file}")
 
 if __name__ == "__main__":
     main()
