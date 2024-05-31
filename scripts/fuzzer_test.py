@@ -49,6 +49,10 @@ def random_address():
 def random_uint256(max_value=2**256 - 1):
     return random.randint(0, max_value)
 
+# 무작위 int 값 생성
+def random_int(min_value=-2**255, max_value=2**255 - 1):
+    return random.randint(min_value, max_value)
+
 # 무작위 bool 값 생성
 def random_bool():
     return random.choice([True, False])
@@ -56,6 +60,11 @@ def random_bool():
 # 무작위 bytes 값 생성
 def random_bytes(length=32):
     return "0x" + ''.join(random.choices('0123456789abcdef', k=length*2))
+
+# 무작위 string 값 생성
+def random_string(max_length=100):
+    length = random.randint(1, max_length)
+    return ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=length))
 
 # 테스트 케이스 생성 함수
 def generate_test_cases(functions, num_cases=5):
@@ -68,13 +77,17 @@ def generate_test_cases(functions, num_cases=5):
                     param_type, param_name = param
                     if param_type == 'address':
                         params.append(random_address())
-                    elif param_type == 'uint256':
+                    elif param_type.startswith('uint'):
                         params.append(random_uint256(10**18))  # 현실적인 값으로 범위 제한
+                    elif param_type.startswith('int'):
+                        params.append(random_int())
                     elif param_type == 'bool':
                         params.append(random_bool())
                     elif param_type.startswith('bytes'):
                         length = int(param_type[5:]) if param_type != 'bytes' else 32
                         params.append(random_bytes(length))
+                    elif param_type == 'string':
+                        params.append(random_string()) 
                 test_cases.append((func['name'], params))
     return test_cases
 
