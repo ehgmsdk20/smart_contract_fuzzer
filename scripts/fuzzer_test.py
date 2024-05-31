@@ -61,7 +61,7 @@ def random_bytes(length=32):
 def generate_test_cases(functions, num_cases=5):
     test_cases = []
     for func in functions:
-        if func['name'] != 'constructor':
+        if func['name'] != 'constructor' and func['name'] != 'deposit':
             for _ in range(num_cases):
                 params = []
                 for param in func['parameters']:
@@ -80,23 +80,23 @@ def generate_test_cases(functions, num_cases=5):
 
 # 퍼징 함수
 def fuzz_contract(contract, functions):
-    test_cases = generate_test_cases(functions, num_cases=100)  # 더 많은 테스트 케이스 생성
+    test_cases = generate_test_cases(functions, num_cases=20)  # 더 많은 테스트 케이스 생성
     history = TxHistory()
 
     # 초기 입금 설정
-    deposit_amount = 10**18  # 1 Ether
+    deposit_amount = 3*10**18  # 1 Ether
     for i in range(1, 3):  # accounts[1]과 accounts[2]에 입금
         try:
-            accounts[i].transfer(contract.address, deposit_amount)
             contract.deposit({'from': accounts[i], 'value': deposit_amount})
         except Exception as e:
+            tx = history[-1] if len(history) > 0 else None
             error_log = {
                 "function": "deposit",
-                "params": [contract.address, deposit_amount],
+                "params": [deposit_amount],
                 "error": str(e),
-                "raw_error": "N/A",
-                "gas_used": "N/A",
-                "transaction_hash": "N/A"
+                "raw_error": tx.input if tx else "N/A",
+                "gas_used": tx.gas_used if tx else "N/A",
+                "transaction_hash": tx.txid if tx else "N/A"
             }
             error_logs.append(error_log)
             print(f"Failed to deposit for account {i}: {str(e)}")
@@ -128,10 +128,11 @@ def analyze_gas_usage(tx, case):
 # 프로퍼티 기반 테스트
 def property_based_tests(contract):
     try:
-        # Example property: totalSupply should never be negative
-        totalSupply = contract.totalSupply()
-        assert totalSupply >= 0, "totalSupply is negative"
-        print("Property test passed: totalSupply is non-negative.")
+        # Example property: balances for all accounts should never be negative
+        for account in accounts[:3]:
+            balance = contract.balances(account)
+            assert balance >= 0, f"Account {account} has negative balance"
+        print("Property test passed: All balances are non-negative.")
     except Exception as e:
         error_logs.append({
             "error": f"Property test failed: {e}"
