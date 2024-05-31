@@ -1,7 +1,7 @@
 import json
 import random
 from slither import Slither
-from brownie import accounts, project, network
+from brownie import accounts, project, network, Wei
 from slither.slither import SlitherError
 from brownie.network.state import TxHistory
 import os
@@ -76,7 +76,7 @@ def generate_test_cases(functions, num_cases=5):
                     if param_type == 'address':
                         params.append(random_address())
                     elif param_type.startswith('uint'):
-                        params.append(random_uint256(10**18))  # 현실적인 값으로 범위 제한
+                        params.append(random_uint256(10**16))  # 현실적인 값으로 범위 제한
                     elif param_type.startswith('int'):
                         params.append(random_int())
                     elif param_type == 'bool':
@@ -104,6 +104,9 @@ def fuzz_contract(contract, functions):
             gas_usages.append({
                 "function": "deposit",
                 "params": [deposit_amount],
+                "msg.sender": accounts[i].address,
+                "msg.value": deposit_amount,
+                "balances[msg.sender]": contract.balances(accounts[i]),
                 "gas_used": tx.gas_used,
                 "transaction_hash": tx.txid
             })
@@ -112,8 +115,11 @@ def fuzz_contract(contract, functions):
             gas_usages.append({
                 "function": "deposit",
                 "params": [deposit_amount],
-                "gas_used": tx.gas_used,
-                "transaction_hash": tx.txid
+                "msg.sender": accounts[i].address,
+                "msg.value": deposit_amount,
+                "balances[msg.sender]": "N/A",
+                "gas_used": tx.gas_used if tx else "N/A",
+                "transaction_hash": tx.txid if tx else "N/A"
             })
             error_log = {
                 "function": "deposit",
@@ -137,6 +143,9 @@ def fuzz_contract(contract, functions):
             gas_usages.append({
                 "function": func_name,
                 "params": params,
+                "msg.sender": accounts[1].address,
+                "msg.value": 0,  # 기본적으로 msg.value는 0으로 설정
+                "balances[msg.sender]": contract.balances(accounts[1]),
                 "gas_used": tx.gas_used,
                 "transaction_hash": tx.txid
             })
@@ -145,8 +154,11 @@ def fuzz_contract(contract, functions):
             gas_usages.append({
                 "function": func_name,
                 "params": params,
-                "gas_used": tx.gas_used,
-                "transaction_hash": tx.txid
+                "msg.sender": accounts[1].address,
+                "msg.value": 0,
+                "balances[msg.sender]": "N/A",
+                "gas_used": tx.gas_used if tx else "N/A",
+                "transaction_hash": tx.txid if tx else "N/A"
             })
             error_log = {
                 "function": func_name,
@@ -204,7 +216,7 @@ def main():
             continue
 
         contract = deploy_contract(contract_name)
-        error_logs, gas_usages =fuzz_contract(contract, functions)
+        error_logs, gas_usages = fuzz_contract(contract, functions)
         pbt_error_logs = property_based_tests(contract)
 
         with open(error_output_file, 'w') as f:
