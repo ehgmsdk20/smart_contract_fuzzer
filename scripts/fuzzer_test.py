@@ -130,6 +130,7 @@ def fuzz_contract(contract, functions):
     error_logs = []
     gas_usages = []
     test_cases = generate_test_cases(functions, num_cases=20)  # 더 많은 테스트 케이스 생성
+    random.shuffle(test_cases)
     history = TxHistory()
 
     # 초기 입금 설정
@@ -175,7 +176,7 @@ def fuzz_contract(contract, functions):
             if params:
                 tx = func(*params, {'from': accounts[1]})
             else:
-                tx = func({'from': accounts[1]})
+                tx = func({'from': accounts[1], 'value': 500})
             gas_usages.append({
                 "function": func_name,
                 "params": params,

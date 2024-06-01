@@ -31,8 +31,8 @@ contract VulnerableAuction {
     }
 
     function endAuction() public {
-        require(block.timestamp >= auctionEndTime, "Auction not yet ended.");
-        require(!ended, "Auction already ended.");
+        // require(block.timestamp >= auctionEndTime, "Auction not yet ended.");
+        // require(!ended, "Auction already ended.");
 
         // Find the highest bid
         uint256 highestBid = 0;
