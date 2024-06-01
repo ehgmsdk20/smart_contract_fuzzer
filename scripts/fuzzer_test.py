@@ -98,7 +98,7 @@ def generate_test_cases(functions, num_cases=5):
                 test_cases.append((func['name'], params, func['payable'], func['view']))
     return test_cases
 
-def plot(gas_usages):
+def plot(gas_usages, output_folder, contract_name):
     function_gas_usage = defaultdict(list)
     for tx in gas_usages:
         function_gas_usage[tx['function']].append(tx['gas_used'])
@@ -128,8 +128,11 @@ def plot(gas_usages):
                             arrowprops=dict(facecolor='red', shrink=0.05))
 
     plt.tight_layout()
-    plt.show()
-    
+    output_file = os.path.join(output_folder, f'gas_usage_{contract_name}.png')
+    plt.savefig(output_file)
+    plt.close()
+    print(f"Gas usage plot saved to {output_file}")
+
 # 퍼징 함수
 def fuzz_contract(contract, functions):
     error_logs = []
@@ -228,7 +231,7 @@ def main():
         contract = deploy_contract(contract_name)
         error_logs, gas_usages = fuzz_contract(contract, functions)
         pbt_error_logs = property_based_tests(contract)
-        plot(gas_usages)
+        plot(gas_usages, contract_output_folder, contract_name)
 
         with open(error_output_file, 'w') as f:
             for log in error_logs + pbt_error_logs:
