@@ -129,6 +129,7 @@ def plot(gas_usages):
 
     plt.tight_layout()
     plt.show()
+    
 # 퍼징 함수
 def fuzz_contract(contract, functions):
     error_logs = []
@@ -136,40 +137,6 @@ def fuzz_contract(contract, functions):
     test_cases = generate_test_cases(functions, num_cases=20)  # 더 많은 테스트 케이스 생성
     random.shuffle(test_cases)
     history = TxHistory()
-
-    # 초기 입금 설정
-    deposit_amount = 3*10**18  # 3 Ether
-    for i in range(1, 3):  # accounts[1]과 accounts[2]에 입금
-        try:
-            tx = contract.deposit({'from': accounts[i], 'value': deposit_amount})
-            gas_usages.append({
-                "function": "deposit",
-                "params": [deposit_amount],
-                "msg.sender": accounts[i].address,
-                "msg.value": deposit_amount,
-                "gas_used": tx.gas_used,
-                "transaction_hash": tx.txid
-            })
-        except Exception as e:
-            tx = history[-1] if len(history) > 0 else None
-            gas_usages.append({
-                "function": "deposit",
-                "params": [deposit_amount],
-                "msg.sender": accounts[i].address,
-                "msg.value": deposit_amount,
-                "gas_used": tx.gas_used if tx else "N/A",
-                "transaction_hash": tx.txid if tx else "N/A"
-            })
-            error_log = {
-                "function": "deposit",
-                "params": [deposit_amount],
-                "error": str(e),
-                "raw_error": tx.input if tx else "N/A",
-                "gas_used": tx.gas_used if tx else "N/A",
-                "transaction_hash": tx.txid if tx else "N/A"
-            }
-            error_logs.append(error_log)
-            print(f"Failed to deposit for account {i}: {str(e)}")
 
     for case in test_cases:
         value = random_int(1, 10000)
