@@ -40,7 +40,8 @@ def extract_functions(contract_path):
             functions.append({
                 'name': func_name, 
                 'parameters': param_list, 
-                'payable': func.payable
+                'payable': func.payable,
+                'view': func.view
             })
         return functions
     except SlitherError as e:
@@ -94,7 +95,7 @@ def generate_test_cases(functions, num_cases=5):
                         params.append(random_bytes(length))
                     elif param_type == 'string':
                         params.append(random_string()) 
-                test_cases.append((func['name'], params))
+                test_cases.append((func['name'], params, func['payable'], func['view']))
     return test_cases
 
 def plot(gas_usages):
@@ -138,25 +139,27 @@ def fuzz_contract(contract, functions):
     history = TxHistory()
 
     for case in test_cases:
-        value = random_int(1, 10000)
-        func_name, params = case
+        value = random_int(0, 10000)
+        func_name, params, payable, view = case
         try:
             func = getattr(contract, func_name)
             msg = {'from': accounts[1]}
-            if func.payable:
+            if payable:
                 msg['value'] = value
             if params:
                 tx = func(*params, msg)
             else:
                 tx = func(msg)
-            gas_usages.append({
-                "function": func_name,
-                "params": params,
-                "msg.sender": accounts[1].address,
-                "msg.value": value,
-                "gas_used": tx.gas_used,
-                "transaction_hash": tx.txid
-            })
+            
+            if not view:
+                gas_usages.append({
+                    "function": func_name,
+                    "params": params,
+                    "msg.sender": accounts[1].address,
+                    "msg.value": value,
+                    "gas_used": tx.gas_used,
+                    "transaction_hash": tx.txid
+                })
         except Exception as e:
             tx = history[-1] if len(history) > 0 else None
             gas_usages.append({
