@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from collections import defaultdict
 from matplotlib.ticker import ScalarFormatter
-
+import ipdb
 
 gas_limit = 100000  # 수정된 가스 한도
 output_base_folder = "./output"
@@ -77,7 +77,7 @@ def random_string(max_length=100):
 def generate_test_cases(functions, num_cases=5):
     test_cases = []
     for func in functions:
-        if func['name'] != 'constructor' and func['name'] != 'deposit':
+        if func['name'] != 'constructor':
             for _ in range(num_cases):
                 params = []
                 for param in func['parameters']:
