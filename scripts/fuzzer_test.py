@@ -9,6 +9,7 @@ import glob
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import defaultdict
+from matplotlib.ticker import ScalarFormatter
 
 
 gas_limit = 100000  # 수정된 가스 한도
@@ -97,7 +98,7 @@ def plot(gas_usages):
     function_gas_usage = defaultdict(list)
     for tx in gas_usages:
         function_gas_usage[tx['function']].append(tx['gas_used'])
-    # Calculate expected gas usage (mean) for each function
+    # Calculate expected gas usage (most common value) for each function
     expected_gas_usage = {func: np.argmax(np.bincount(gas)) for func, gas in function_gas_usage.items()}
 
     # Plot the data
@@ -106,17 +107,19 @@ def plot(gas_usages):
     # Define number of subplots based on unique functions
     num_functions = len(function_gas_usage)
     for i, (func, gas_usage) in enumerate(function_gas_usage.items(), 1):
-        plt.subplot(1, num_functions, i)
+        ax = plt.subplot(1, num_functions, i)
         plt.hist(gas_usage, bins=20, alpha=0.75, label=f'{func} Gas Usage')
         plt.axvline(expected_gas_usage[func], color='red', linestyle='dashed', linewidth=2, label='Expected Gas Usage')
         plt.title(f'{func.capitalize()} Function Gas Usage')
         plt.xlabel('Gas Used')
         plt.ylabel('Frequency')
         plt.legend()
+        
+        ax.xaxis.set_major_formatter(ScalarFormatter(useOffset=False))
 
         # Highlight points above the expected threshold
         for gas in gas_usage:
-            if gas > expected_gas_usage[func] * 1.1:  # 10% above the mean
+            if gas > expected_gas_usage[func] * 1.1:  # 10% above the most common value
                 plt.annotate('Above expected', xy=(gas, 0), xytext=(gas, 0.5),
                             arrowprops=dict(facecolor='red', shrink=0.05))
 
