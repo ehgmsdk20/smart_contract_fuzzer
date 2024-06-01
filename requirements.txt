@@ -47,6 +47,7 @@ py==1.11.0
 py-solc-ast==1.2.10
 py-solc-x==1.1.1
 pycryptodome==3.20.0
+pygame==2.5.2
 Pygments==2.17.2
 pygments-lexer-solidity==0.7.0
 pytest==6.2.5
@@ -64,6 +65,7 @@ semantic-version==2.10.0
 six==1.16.0
 solidity-parser==0.1.1
 sortedcontainers==2.4.0
+slither-analyzer==0.10.0
 toml==0.10.2
 toolz==0.12.1
 tqdm==4.66.2
