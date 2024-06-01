@@ -38,7 +38,11 @@ def extract_functions(contract_path):
         for func in contract.functions:
             func_name = func.name
             param_list = [(param.type.type, param.name) for param in func.parameters]
-            functions.append({'name': func_name, 'parameters': param_list})
+            functions.append({
+                'name': func_name, 
+                'parameters': param_list, 
+                'payable': func.payable
+            })
         return functions
     except SlitherError as e:
         print(f"Error while parsing the contract: {e}")
@@ -172,10 +176,13 @@ def fuzz_contract(contract, functions):
         func_name, params = case
         try:
             func = getattr(contract, func_name)
+            msg = {'from': accounts[1]}
+            if func.payable:
+                msg[value] = value
             if params:
-                tx = func(*params, {'from': accounts[1], 'value': value})
+                tx = func(*params, msg)
             else:
-                tx = func({'from': accounts[1], 'value': value})
+                tx = func(msg)
             gas_usages.append({
                 "function": func_name,
                 "params": params,
