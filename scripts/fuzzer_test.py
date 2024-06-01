@@ -143,7 +143,6 @@ def fuzz_contract(contract, functions):
                 "params": [deposit_amount],
                 "msg.sender": accounts[i].address,
                 "msg.value": deposit_amount,
-                "balances[msg.sender]": contract.balances(accounts[i]),
                 "gas_used": tx.gas_used,
                 "transaction_hash": tx.txid
             })
@@ -154,7 +153,6 @@ def fuzz_contract(contract, functions):
                 "params": [deposit_amount],
                 "msg.sender": accounts[i].address,
                 "msg.value": deposit_amount,
-                "balances[msg.sender]": "N/A",
                 "gas_used": tx.gas_used if tx else "N/A",
                 "transaction_hash": tx.txid if tx else "N/A"
             })
@@ -170,19 +168,19 @@ def fuzz_contract(contract, functions):
             print(f"Failed to deposit for account {i}: {str(e)}")
 
     for case in test_cases:
+        value = random_int(0, 10000)
         func_name, params = case
         try:
             func = getattr(contract, func_name)
             if params:
-                tx = func(*params, {'from': accounts[1]})
+                tx = func(*params, {'from': accounts[1], 'value': value})
             else:
-                tx = func({'from': accounts[1], 'value': 500})
+                tx = func({'from': accounts[1], 'value': value})
             gas_usages.append({
                 "function": func_name,
                 "params": params,
                 "msg.sender": accounts[1].address,
-                "msg.value": 0,  # 기본적으로 msg.value는 0으로 설정
-                "balances[msg.sender]": contract.balances(accounts[1]),
+                "msg.value": value,
                 "gas_used": tx.gas_used,
                 "transaction_hash": tx.txid
             })
@@ -192,8 +190,7 @@ def fuzz_contract(contract, functions):
                 "function": func_name,
                 "params": params,
                 "msg.sender": accounts[1].address,
-                "msg.value": 0,
-                "balances[msg.sender]": "N/A",
+                "msg.value": value,
                 "gas_used": tx.gas_used if tx else "N/A",
                 "transaction_hash": tx.txid if tx else "N/A"
             })
