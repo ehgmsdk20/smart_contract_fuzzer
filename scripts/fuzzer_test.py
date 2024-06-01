@@ -98,7 +98,7 @@ def plot(gas_usages):
     for tx in gas_usages:
         function_gas_usage[tx['function']].append(tx['gas_used'])
     # Calculate expected gas usage (mean) for each function
-    expected_gas_usage = {func: np.mean(gas) for func, gas in function_gas_usage.items()}
+    expected_gas_usage = {func: np.argmax(np.bincount(gas)) for func, gas in function_gas_usage.items()}
 
     # Plot the data
     plt.figure(figsize=(14, 7))
