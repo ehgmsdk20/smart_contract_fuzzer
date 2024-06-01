@@ -172,13 +172,13 @@ def fuzz_contract(contract, functions):
             print(f"Failed to deposit for account {i}: {str(e)}")
 
     for case in test_cases:
-        value = random_int(0, 10000)
+        value = random_int(1, 10000)
         func_name, params = case
         try:
             func = getattr(contract, func_name)
             msg = {'from': accounts[1]}
             if func.payable:
-                msg[value] = value
+                msg['value'] = value
             if params:
                 tx = func(*params, msg)
             else:
