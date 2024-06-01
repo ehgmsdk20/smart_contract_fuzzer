@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from collections import defaultdict
 from matplotlib.ticker import ScalarFormatter
-import ipdb
 
 gas_limit = 100000  # 수정된 가스 한도
 output_base_folder = "./output"
