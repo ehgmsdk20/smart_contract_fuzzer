@@ -62,8 +62,6 @@ def extract_functions(contract_path):
                     'view': func.view
                 })
             functions_per_contracts[contract.name] = functions
-        for contract_name in functions_per_contracts.keys():
-            print(contract_name)
         return functions_per_contracts
     except SlitherError as e:
         print(f"Error while parsing the contract: {e}")
