@@ -148,6 +148,61 @@ def plot(gas_usages, output_folder, contract_name):
             f.write("\n")
     print(f"Unexpected conditions saved to {unexpected_file}")
 
+def plot_test(gas_usages, output_folder, contract_name):
+    function_gas_usage = defaultdict(list)
+    unexpected_conditions = []
+
+    for tx in gas_usages:
+        function_gas_usage[tx['function']].append(tx['gas_used'])
+
+    # Calculate expected gas usage (most common bin range) for each function
+    expected_gas_usage = {}
+    for func, gas in function_gas_usage.items():
+        counts, bin_edges = np.histogram(gas, bins=20)
+        max_bin_index = np.argmax(counts)
+        expected_gas_usage[func] = (bin_edges[max_bin_index], bin_edges[max_bin_index + 1])
+
+    # Plot the data
+    plt.figure(figsize=(14, 7))
+
+    # Define number of subplots based on unique functions
+    num_functions = len(function_gas_usage)
+    for i, (func, gas_usage) in enumerate(function_gas_usage.items(), 1):
+        ax = plt.subplot(1, num_functions, i)
+        plt.hist(gas_usage, bins=20, alpha=0.75, label=f'{func} Gas Usage')
+        plt.axvline(expected_gas_usage[func][0], color='red', linestyle='dashed', linewidth=2, label='Expected Gas Usage Start')
+        plt.axvline(expected_gas_usage[func][1], color='blue', linestyle='dashed', linewidth=2, label='Expected Gas Usage End')
+        plt.title(f'{func.capitalize()} Function Gas Usage')
+        plt.xlabel('Gas Used')
+        plt.ylabel('Frequency')
+        plt.legend()
+
+        ax.xaxis.set_major_formatter(ScalarFormatter(useOffset=False))
+
+        # Highlight points above the expected threshold and collect unexpected conditions
+        for tx in gas_usages:
+            if tx['function'] == func and tx['gas_used'] > expected_gas_usage[func][1]:
+                unexpected_conditions.append(tx)
+                plt.annotate('Above expected', xy=(tx['gas_used'], 0), xytext=(tx['gas_used'], 0.5),
+                             arrowprops=dict(facecolor='red', shrink=0.05))
+
+    plt.tight_layout()
+    output_file = os.path.join(output_folder, f'gas_usage_{contract_name}.png')
+    plt.savefig(output_file)
+    plt.close()
+    print(f"Gas usage plot saved to {output_file}")
+
+    # Save unexpected conditions to a file
+    unexpected_file = os.path.join(output_folder, 'unexpected_condition.txt')
+    with open(unexpected_file, 'w') as f:
+        for condition in unexpected_conditions:
+            f.write(f"Function: {condition['function']}\n")
+            f.write(f"Gas Used: {condition['gas_used']}\n")
+            f.write(f"Params: {condition.get('params', 'N/A')}\n")
+            f.write(f"Msg.value: {condition.get('msg.value', 'N/A')}\n")
+            f.write("\n")
+    print(f"Unexpected conditions saved to {unexpected_file}")
+
 # 퍼징 함수
 def fuzz_contract(contract, functions):
     error_logs = []
@@ -246,8 +301,9 @@ def main():
         contract = deploy_contract(contract_name)
         error_logs, gas_usages = fuzz_contract(contract, functions)
         pbt_error_logs = property_based_tests(contract)
-        plot(gas_usages, contract_output_folder, contract_name)
-
+        #plot(gas_usages, contract_output_folder, contract_name)
+        plot_test(gas_usages, contract_output_folder, contract_name)
+        
         with open(error_output_file, 'w') as f:
             for log in error_logs + pbt_error_logs:
                 f.write(json.dumps(log) + "\n")
