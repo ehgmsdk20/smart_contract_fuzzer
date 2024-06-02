@@ -133,16 +133,18 @@ def plot(gas_usages, output_folder, contract_name):
         plt.title(f'{func.capitalize()} Function Gas Usage')
         plt.xlabel('Gas Used')
         plt.ylabel('Frequency')
-        plt.legend()
-
-        ax.xaxis.set_major_formatter(ScalarFormatter(useOffset=False))
 
         # Highlight points above the expected threshold and collect unexpected conditions
         for tx in gas_usages:
             if tx['function'] == func and tx['gas_used'] > expected_gas_usage[func][1]:
                 unexpected_conditions.append(tx)
-                plt.annotate('Above expected', xy=(tx['gas_used'], 0), xytext=(tx['gas_used'], 0.5),
-                             arrowprops=dict(facecolor='red', shrink=0.05))
+        high_gas_usages = [tx['gas_used'] for tx in gas_usages if tx['function'] == func and tx['gas_used'] > expected_gas_usage[func][1]]
+        ax.plot(high_gas_usages, [0.5] * len(high_gas_usages), 'ro', label='Above Expected')
+        
+        plt.legend()
+
+        ax.xaxis.set_major_formatter(ScalarFormatter(useOffset=False))
+
 
     plt.tight_layout()
     output_file = os.path.join(output_folder, f'gas_usage_{contract_name}.png')
