@@ -5,7 +5,7 @@ contract loop_test {
     mapping(address => uint256) public balances;
 
     function deposit() public payable {
-        for (uint256 i = 0; i < msg.value; i++) {
+        for (uint256 i = 0; i < msg.value; i = i + 10) {
             balances[msg.sender] += 1;
         }        
     }

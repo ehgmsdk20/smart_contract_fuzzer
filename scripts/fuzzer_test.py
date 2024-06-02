@@ -100,8 +100,11 @@ def generate_test_cases(functions, num_cases=5):
 
 def plot(gas_usages, output_folder, contract_name):
     function_gas_usage = defaultdict(list)
+    unexpected_conditions = []
+
     for tx in gas_usages:
         function_gas_usage[tx['function']].append(tx['gas_used'])
+
     # Calculate expected gas usage (most common value) for each function
     expected_gas_usage = {func: np.argmax(np.bincount(gas)) for func, gas in function_gas_usage.items()}
 
@@ -118,20 +121,32 @@ def plot(gas_usages, output_folder, contract_name):
         plt.xlabel('Gas Used')
         plt.ylabel('Frequency')
         plt.legend()
-        
+
         ax.xaxis.set_major_formatter(ScalarFormatter(useOffset=False))
 
-        # Highlight points above the expected threshold
-        for gas in gas_usage:
-            if gas > expected_gas_usage[func] * 1.1:  # 10% above the most common value
-                plt.annotate('Above expected', xy=(gas, 0), xytext=(gas, 0.5),
-                            arrowprops=dict(facecolor='red', shrink=0.05))
+        # Highlight points above the expected threshold and collect unexpected conditions
+        for tx in gas_usages:
+            if tx['function'] == func and tx['gas_used'] > expected_gas_usage[func] * 1.1:  # 10% above the most common value
+                unexpected_conditions.append(tx)
+                plt.annotate('Above expected', xy=(tx['gas_used'], 0), xytext=(tx['gas_used'], 0.5),
+                             arrowprops=dict(facecolor='red', shrink=0.05))
 
     plt.tight_layout()
     output_file = os.path.join(output_folder, f'gas_usage_{contract_name}.png')
     plt.savefig(output_file)
     plt.close()
     print(f"Gas usage plot saved to {output_file}")
+
+    # Save unexpected conditions to a file
+    unexpected_file = os.path.join(output_folder, 'unexpected_condition.txt')
+    with open(unexpected_file, 'w') as f:
+        for condition in unexpected_conditions:
+            f.write(f"Function: {condition['function']}\n")
+            f.write(f"Gas Used: {condition['gas_used']}\n")
+            f.write(f"Params: {condition.get('params', 'N/A')}\n")
+            f.write(f"Msg.value: {condition.get('msg.value', 'N/A')}\n")
+            f.write("\n")
+    print(f"Unexpected conditions saved to {unexpected_file}")
 
 # 퍼징 함수
 def fuzz_contract(contract, functions):

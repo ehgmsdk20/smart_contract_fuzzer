@@ -6,7 +6,7 @@ contract Vulnerable1 {
 
     function test(uint256 _amount) public {
         if (_amount > 80000) {
-            for (uint256 i = 0; i < _amount; i++) {
+            for (uint256 i = 0; i < _amount; i=i+10) {
                 amount+=1;
             }
         }
