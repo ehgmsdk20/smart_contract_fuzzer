@@ -23,7 +23,6 @@ if not os.path.exists(output_base_folder):
 def deploy_contract(contract_name):
     proj = project.load('.', name=contract_name)
     proj.load_config()
-    proj()
     Contract = getattr(proj, contract_name)
     return Contract.deploy({'from': accounts[0]})
 
