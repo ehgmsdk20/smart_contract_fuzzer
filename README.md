@@ -14,6 +14,7 @@ Make sure you have the following installed:
 - Python 3.11.7
 - Node.js
 - `solc` (Solidity compiler)
+- [Brownie](https://eth-brownie.readthedocs.io/en/stable/install.html)
 
 ## Setup
 
@@ -41,13 +42,13 @@ To use the smart contract fuzzer:
 
 2. Execute the fuzzer script:
     ```sh
-    python fuzzer_test.py
+    brownie run scripts/fuzzer_test.py
     ```
 
 ## Project Structure
 
 - `contracts/` - Directory where your Solidity contracts should be placed.
-- `fuzzer_test.py` - Main script to execute the smart contract fuzzer.
+- `scripts/` - Directory containing the fuzzer script.
 - `requirements.txt` - Python dependencies for the project.
 - `setting.sh` - Script to set up the environment.
 
@@ -57,7 +58,7 @@ To use the smart contract fuzzer:
 
 2. Run the fuzzer:
     ```sh
-    python fuzzer_test.py
+    brownie run scripts/fuzzer_test.py
     ```
 
 The script will parse the contract using Slither, generate test cases, measure gas usage, and identify any abnormal gas usage patterns.
@@ -75,4 +76,4 @@ This project is licensed under the MIT License. See the `LICENSE` file for more 
 - [Slither](https://github.com/crytic/slither) - Static analysis framework for Solidity.
 - [Ganache](https://www.trufflesuite.com/ganache) - Personal blockchain for Ethereum development.
 - [solc-select](https://github.com/crytic/solc-select) - Solidity compiler version switcher.
-
+- [Brownie](https://eth-brownie.readthedocs.io/en/stable/) - Python-based development and testing framework for smart contracts.
