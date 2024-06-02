@@ -6,7 +6,7 @@ contract loop_test {
 
     function deposit() public payable {
         for (uint256 i = 0; i < msg.value; i = i + 10) {
-            balances[msg.sender] += 1;
+            balances[msg.sender] += 10;
         }        
     }
 
