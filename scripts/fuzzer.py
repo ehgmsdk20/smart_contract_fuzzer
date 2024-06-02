@@ -13,20 +13,17 @@ from matplotlib.ticker import ScalarFormatter
 import subprocess
 import re
 
-gas_limit = 100000  # 수정된 가스 한도
 output_base_folder = "./output"
 
 if not os.path.exists(output_base_folder):
     os.makedirs(output_base_folder)
 
-# 스마트 컨트랙트 컴파일 및 배포
 def deploy_contract(contract_name):
     proj = project.load('.', name=contract_name)
     proj.load_config()
     Contract = getattr(proj, contract_name)
     return Contract.deploy({'from': accounts[0]})
 
-# Solidity 컴파일러 버전 설정
 def set_solc_version(contract_path):
     with open(contract_path, 'r') as file:
         content = file.read()
@@ -40,7 +37,6 @@ def set_solc_version(contract_path):
     else:
         raise Exception("No pragma solidity version found in contract.")
 
-# 함수 정보 추출 함수
 def extract_functions(contract_path):
     try:
         set_solc_version(contract_path)
@@ -67,32 +63,25 @@ def extract_functions(contract_path):
         print(f"Error while parsing the contract: {e}")
         return {}
 
-# 무작위 주소 생성
 def random_address():
     return "0x" + ''.join(random.choices('0123456789abcdef', k=40))
 
-# 무작위 uint256 값 생성
 def random_uint256(max_value=2**256 - 1):
     return random.randint(0, max_value)
 
-# 무작위 int 값 생성
 def random_int(min_value=-2**255, max_value=2**255 - 1):
     return random.randint(min_value, max_value)
 
-# 무작위 bool 값 생성
 def random_bool():
     return random.choice([True, False])
 
-# 무작위 bytes 값 생성
 def random_bytes(length=32):
     return "0x" + ''.join(random.choices('0123456789abcdef', k=length*2))
 
-# 무작위 string 값 생성
 def random_string(max_length=100):
     length = random.randint(1, max_length)
     return ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=length))
 
-# 테스트 케이스 생성 함수
 def generate_test_cases(functions, num_cases=5):
     test_cases = []
     for func in functions:
@@ -104,7 +93,7 @@ def generate_test_cases(functions, num_cases=5):
                     if param_type == 'address':
                         params.append(random_address())
                     elif param_type.startswith('uint'):
-                        params.append(random_uint256(100000))  # 현실적인 값으로 범위 제한
+                        params.append(random_uint256(100000))
                     elif param_type.startswith('int'):
                         params.append(random_int())
                     elif param_type == 'bool':
@@ -161,9 +150,19 @@ def plot(gas_usages, output_folder, contract_name):
     plt.close()
     print(f"Gas usage plot saved to {output_file}")
 
+    # Calculate additional statistics
+    total_txs = len(gas_usages)
+    num_exceeded_txs = len(unexpected_conditions)
+    percentage_exceeded = (num_exceeded_txs / total_txs) * 100 if total_txs > 0 else 0
+    average_exceeded_ratio = np.mean(
+        [tx['gas_used'] / expected_gas_usage[tx['function']][1] for tx in unexpected_conditions]
+    ) if num_exceeded_txs > 0 else 0
+
     # Save unexpected conditions to a file
     unexpected_file = os.path.join(output_folder, 'unexpected_condition.txt')
     with open(unexpected_file, 'w') as f:
+        f.write(f"Percentage of transactions exceeding expected gas usage: {percentage_exceeded:.2f}%\n")
+        f.write(f"Average exceeded gas usage ratio: {average_exceeded_ratio:.2f}\n\n")
         for condition in unexpected_conditions:
             f.write(f"Function: {condition['function']}\n")
             f.write(f"Gas Used: {condition['gas_used']}\n")
@@ -172,11 +171,10 @@ def plot(gas_usages, output_folder, contract_name):
             f.write("\n")
     print(f"Unexpected conditions saved to {unexpected_file}")
 
-# 퍼징 함수
 def fuzz_contract(contract, functions):
     error_logs = []
     gas_usages = []
-    test_cases = generate_test_cases(functions, num_cases=20)  # 더 많은 테스트 케이스 생성
+    test_cases = generate_test_cases(functions, num_cases=100)  
     random.shuffle(test_cases)
     history = TxHistory()
 
@@ -223,30 +221,9 @@ def fuzz_contract(contract, functions):
             error_logs.append(error_log)
     return error_logs, gas_usages
 
-def analyze_gas_usage(tx, case):
-    if tx.gas_used > gas_limit:
-        print(f"Warning: High gas usage({tx.gas_used}) for {case}")
-
-# 프로퍼티 기반 테스트
-def property_based_tests(contract):
-    error_logs = []
-    try:
-        if (getattr(contract, "balances", None)):
-            # Example property: balances for all accounts should never be negative
-            for account in accounts[:3]:
-                balance = contract.balances(account)
-                assert balance >= 0, f"Account {account} has negative balance"
-            print("Property test passed: All balances are non-negative.")
-    except Exception as e:
-        error_logs.append({
-            "error": f"Property test failed: {e}"
-        })
-    return error_logs
-
-# 메인 함수
 def main():
     if not network.is_connected():
-        network.connect('development')  # 로컬 개발 네트워크에 연결
+        network.connect('development') 
 
     contract_files = glob.glob("contracts/*.sol")
     if not contract_files:
@@ -259,8 +236,6 @@ def main():
             if not functions:
                 print(f"No functions extracted for {contract_name}. Skipping...")
                 continue
-            
-        
             print(f"Testing contract: {contract_name}")
 
             contract_output_folder = os.path.join(output_base_folder, contract_name)
@@ -272,11 +247,10 @@ def main():
             try:
                 contract = deploy_contract(contract_name)
                 error_logs, gas_usages = fuzz_contract(contract, functions)
-                pbt_error_logs = property_based_tests(contract)
                 plot(gas_usages, contract_output_folder, contract_name)
                 
                 with open(error_output_file, 'w') as f:
-                    for log in error_logs + pbt_error_logs:
+                    for log in error_logs:
                         f.write(json.dumps(log) + "\n")
                     print(f"Error logs saved to {error_output_file}")
 
