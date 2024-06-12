@@ -18,12 +18,8 @@ output_base_folder = "./output"
 if not os.path.exists(output_base_folder):
     os.makedirs(output_base_folder)
 
-def deploy_contract(contract_name):    
-    loaded_projects = project.get_loaded_projects()
-    if contract_name in loaded_projects:
-        proj = loaded_projects[contract_name]
-    else:
-        proj = project.load('.', name=contract_name)
+def deploy_contract(contract_name):
+    proj = project.load('.', name=contract_name)
     proj.load_config()
     Contract = getattr(proj, contract_name)
     return Contract.deploy({'from': accounts[0]})
@@ -267,7 +263,7 @@ def main():
                         f.write(json.dumps(usage) + "\n")
                     print(f"Gas usage logs saved to {gas_usage_file}")
             except Exception as e:
-                print(f"Deploying contract {contract_name} failed with {str(e)}")
+                print(f"Deploying contract {contract_name} failed")
 
 if __name__ == "__main__":
     main()
