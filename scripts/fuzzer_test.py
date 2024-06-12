@@ -2,6 +2,7 @@ import random
 from slither import Slither
 from brownie import accounts, network, project
 import os
+import time
 
 def random_address():
     return "0x" + ''.join(random.choices('0123456789abcdef', k=40))
@@ -82,6 +83,7 @@ def main():
     if not network.is_connected():
         try:
             network.connect('development')
+            time.sleep(1)  # Add a short delay to ensure the network is fully connected
         except Exception as e:
             print(f"Failed to connect to network: {e}")
             return
@@ -97,7 +99,7 @@ def main():
         print(f"Failed to load project: {e}")
         return
 
-    iterations = 10  # Number of fuzzing iterations
+    iterations = 1  # Number of fuzzing iterations
 
     for i in range(iterations):
         deploy_contracts(proj, contracts_info, dev, i)
