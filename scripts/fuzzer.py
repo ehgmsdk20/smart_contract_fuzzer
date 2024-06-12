@@ -50,7 +50,7 @@ def extract_functions(contract_path):
             functions = []
             for func in contract.functions:
                 func_name = func.name
-                param_list = [(param.type.type, param.name) for param in func.parameters]
+                param_list = [(param.type, param.name) for param in func.parameters]
                 functions.append({
                     'name': func_name, 
                     'parameters': param_list, 
