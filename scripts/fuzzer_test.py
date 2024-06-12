@@ -1,6 +1,43 @@
+import random
 from slither import Slither
 from brownie import accounts, network, project
 import os
+
+def random_address():
+    return "0x" + ''.join(random.choices('0123456789abcdef', k=40))
+
+def random_uint256(max_value=2**256 - 1):
+    return random.randint(0, max_value)
+
+def random_int(min_value=-2**255, max_value=2**255 - 1):
+    return random.randint(min_value, max_value)
+
+def random_bool():
+    return random.choice([True, False])
+
+def random_bytes(length=32):
+    return "0x" + ''.join(random.choices('0123456789abcdef', k=length*2))
+
+def random_string(max_length=100):
+    length = random.randint(1, max_length)
+    return ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=length))
+
+def get_random_value(param_type):
+    if 'uint' in param_type:
+        return random_uint256()
+    elif 'int' in param_type:
+        return random_int()
+    elif 'address' in param_type:
+        return random_address()
+    elif 'bool' in param_type:
+        return random_bool()
+    elif 'bytes' in param_type:
+        length = int(param_type.replace('bytes', '')) if 'bytes' in param_type else 32
+        return random_bytes(length)
+    elif 'string' in param_type:
+        return random_string()
+    else:
+        return 0
 
 def get_contracts_info(project_path):
     slither = Slither(project_path)
@@ -17,6 +54,26 @@ def get_contracts_info(project_path):
         contracts_info[contract_name] = params
 
     return contracts_info
+
+def deploy_contracts(proj, contracts_info, dev, iteration):
+    deployed_contracts = {}
+    
+    for contract_name, params in contracts_info.items():
+        if contract_name not in proj:
+            print(f"Contract {contract_name} not found in project.")
+            continue
+
+        constructor_args = [get_random_value(param_type) for param_name, param_type in params]
+
+        try:
+            contract = getattr(proj, contract_name)
+            deployed_contract = contract.deploy(*constructor_args, {'from': dev})
+            deployed_contracts[contract_name] = deployed_contract.address
+            print(f"[{iteration}] Deployed {contract_name} at {deployed_contract.address}")
+        except Exception as e:
+            print(f"[{iteration}] Error deploying {contract_name}: {e}")
+    
+    return deployed_contracts
 
 def main():
     project_path = '.'  # Adjust this to your project's path
@@ -40,36 +97,10 @@ def main():
         print(f"Failed to load project: {e}")
         return
 
-    deployed_contracts = {}
+    iterations = 10  # Number of fuzzing iterations
 
-    for contract_name, params in contracts_info.items():
-        if contract_name not in proj:
-            print(f"Contract {contract_name} not found in project.")
-            continue
-
-        constructor_args = []
-        for param_name, param_type in params:
-            if 'uint' in param_type:
-                constructor_args.append(1e18)  # default value for uint types
-            elif 'address' in param_type:
-                constructor_args.append(dev.address)  # default address value
-            elif 'string' in param_type:
-                constructor_args.append("default")  # default string value
-            elif 'bytes' in param_type:
-                constructor_args.append(b"")  # default bytes value
-            else:
-                constructor_args.append(0)  # default value for other types
-
-        try:
-            contract = getattr(proj, contract_name)
-            deployed_contract = contract.deploy(*constructor_args, {'from': dev})
-            deployed_contracts[contract_name] = deployed_contract.address
-            print(f"Deployed {contract_name} at {deployed_contract.address}")
-        except Exception as e:
-            print(f"Error deploying {contract_name}: {e}")
-
-    for contract_name, address in deployed_contracts.items():
-        print(f"Deployed {contract_name} at {address}")
+    for i in range(iterations):
+        deploy_contracts(proj, contracts_info, dev, i)
 
     try:
         network.disconnect()
