@@ -58,7 +58,7 @@ To use the smart contract fuzzer:
 
 2. Run the fuzzer:
     ```sh
-    brownie run scripts/fuzzer_test.py
+    brownie run scripts/fuzzer.py
     ```
 
 The script will parse the contract using Slither, generate test cases, measure gas usage, and identify any abnormal gas usage patterns.
