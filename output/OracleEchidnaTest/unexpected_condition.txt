@@ -1,0 +1,58 @@
+Percentage of transactions exceeding expected gas usage: 22.00%
+Average exceeded gas usage ratio: 1.51
+
+Function: initialize
+Gas Used: 51985
+Params: [99052, -25188549924305405023069045098136758128698049419403164831788005243297293375477, 9088]
+Msg.value: 2470
+
+Function: grow
+Gas Used: 36985
+Params: [79206]
+Msg.value: 2782
+
+Function: grow
+Gas Used: 36985
+Params: [96956]
+Msg.value: 4036
+
+Function: grow
+Gas Used: 36997
+Params: [84547]
+Msg.value: 4599
+
+Function: advanceTime
+Gas Used: 51985
+Params: [60383]
+Msg.value: 706
+
+Function: limitTimePassed
+Gas Used: 51985
+Params: [55504]
+Msg.value: 110
+
+Function: limitTimePassed
+Gas Used: 51985
+Params: [51047]
+Msg.value: 6245
+
+Function: limitTimePassed
+Gas Used: 36985
+Params: [58223]
+Msg.value: 2472
+
+Function: limitTimePassed
+Gas Used: 36985
+Params: [13086]
+Msg.value: 121
+
+Function: limitTimePassed
+Gas Used: 36985
+Params: [28761]
+Msg.value: 5834
+
+Function: limitTimePassed
+Gas Used: 36997
+Params: [6857]
+Msg.value: 6452
+

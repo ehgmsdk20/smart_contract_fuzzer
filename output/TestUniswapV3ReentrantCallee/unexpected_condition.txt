@@ -1,0 +1,8 @@
+Percentage of transactions exceeding expected gas usage: 2.50%
+Average exceeded gas usage ratio: 1.49
+
+Function: slitherConstructorConstantVariables
+Gas Used: 36985
+Params: []
+Msg.value: 9978
+

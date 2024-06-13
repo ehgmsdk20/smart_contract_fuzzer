@@ -1,0 +1,218 @@
+Percentage of transactions exceeding expected gas usage: 30.71%
+Average exceeded gas usage ratio: 2.70
+
+Function: uniswapV3SwapCallback
+Gas Used: 12000000
+Params: [-56134394223719110569249876485783026110382445850377912617277614957496364414552, -17187714279217144971010307201067713371813642822218574975689190156130753986245, '0xcac1eaf7a6cb1be129745ac0646f9a31c73ff34e308e9842ad1d068287bc4ea4']
+Msg.value: 9939
+
+Function: uniswapV3SwapCallback
+Gas Used: 12000000
+Params: [-17272489529090252344913422547842949960347686901501532957895172222824313781878, -55944179521199275446300945123282378162209116469314910415607639774375424211055, '0x1925b53c60bdbd0302cdb4386f682be2d9396ab14e3145894341839af340b883']
+Msg.value: 7898
+
+Function: uniswapV3SwapCallback
+Gas Used: 12000000
+Params: [-27151347010148085909342979860848988807271106703009561668254374657531095235769, -24949332518189310149204967271821264479722837217923938474143941842329171198765, '0x9beb9b3559a6c86e6c400f15a5b2c602597df85e97c588f0797305715740a743']
+Msg.value: 9639
+
+Function: uniswapV3SwapCallback
+Gas Used: 12000000
+Params: [-7658452997905854872921790929064426472115873554974811068379099133371739145728, -48748502581621830162537743536619774092313952913524209321701520421267953111855, '0x9e3a8cbf6d5bcab96ade0c22107cb311a847f1c61a886a310e747053ea92a012']
+Msg.value: 6571
+
+Function: swapToLowerSqrtPrice
+Gas Used: 23547
+Params: ['0x4b52be41f6280e9cd9cdf435fac6a36013e1fd17', 68917, '0x2370a2fae00425b50e3f7065f3d1382a9fa2cfab']
+Msg.value: 2652
+
+Function: swapToLowerSqrtPrice
+Gas Used: 23547
+Params: ['0x5b7153c02327a5331c3d4ef97c5fd62b38604874', 67643, '0x7230aa3bb29973548d9c4a40963bfdfdb367a792']
+Msg.value: 6007
+
+Function: uniswapV3FlashCallback
+Gas Used: 24002
+Params: [68182, 53721, '0x9510f52061c42334ecae77948c2a297510672de3cfea8510e80cae01df855a63']
+Msg.value: 1570
+
+Function: uniswapV3FlashCallback
+Gas Used: 24002
+Params: [15997, 85245, '0x0fbe52236d013c2d159125ea58fc54a466e7e1fef46b5fc03890a395666c7bd9']
+Msg.value: 8313
+
+Function: uniswapV3FlashCallback
+Gas Used: 24002
+Params: [37455, 78699, '0x945bfb894e4c7f752a7ebdf955522e7cc689399bd4e818024812b7346ffcd6da']
+Msg.value: 5961
+
+Function: uniswapV3FlashCallback
+Gas Used: 24014
+Params: [89253, 78578, '0x6311602cc6dd8974e5893816af6c5384ac873a2fa5624919a321d8c36f731cd2']
+Msg.value: 3723
+
+Function: uniswapV3FlashCallback
+Gas Used: 24014
+Params: [69885, 70149, '0x5d08f4af5b4c6191e6cd360ba34e6a51cae27395cfa2835308a7ef73f5bea913']
+Msg.value: 5176
+
+Function: uniswapV3FlashCallback
+Gas Used: 24002
+Params: [57533, 84543, '0x6dee3359687f3c8aadfb5ee4d18d7d863308798aa935577a0438267d49d1c2d3']
+Msg.value: 3990
+
+Function: uniswapV3FlashCallback
+Gas Used: 24002
+Params: [90385, 20258, '0x390f2f6895d01a30ac67b965dc664c18965a2b3d712acd75e58b6e2d903ebe4b']
+Msg.value: 2463
+
+Function: uniswapV3FlashCallback
+Gas Used: 24014
+Params: [67021, 73325, '0x81e3655a4e4c0e8522667dafd77742a2cd2579d230c16129f5efdf936256fd09']
+Msg.value: 8011
+
+Function: uniswapV3FlashCallback
+Gas Used: 24002
+Params: [11943, 72815, '0x852992fd24271bda827482be2c16ca8d8c0b1f9d44e68485e5165d53b1970b96']
+Msg.value: 1630
+
+Function: flash
+Gas Used: 24171
+Params: ['0x980c25457f16144a73bacfd8dd885d9cbaddf60c', '0x290e6960e18a3950483338c569b40350c7bbaa4d', 1997, 78046, 70380, 97591]
+Msg.value: 9678
+
+Function: flash
+Gas Used: 24171
+Params: ['0x202e04f1425ca26029d7be58a09772a38fa6826f', '0x12b9722a2d6d81518c0474064e012de19221e6b3', 99904, 51947, 89106, 94617]
+Msg.value: 1923
+
+Function: uniswapV3MintCallback
+Gas Used: 24808
+Params: [15696, 81426, '0x268c96325e767daced13aca413c24985bd32e47b63bb73bc9371abcc2c0f8328']
+Msg.value: 2249
+
+Function: uniswapV3MintCallback
+Gas Used: 24808
+Params: [46502, 69393, '0x6550184ecf91d1c2c028202ab7a93e15b3f2a145266e915f126231dc79939af3']
+Msg.value: 3980
+
+Function: uniswapV3MintCallback
+Gas Used: 24808
+Params: [5299, 74235, '0x13fe4fce479f8fc65c82b5be2b7a39df36f90757c2bd6b92d40b73404a289da9']
+Msg.value: 6935
+
+Function: uniswapV3MintCallback
+Gas Used: 24808
+Params: [53087, 96083, '0x3f08769163bbfb9f4fa35650079eec56065cc03dff21739ce4055aac8911db33']
+Msg.value: 6110
+
+Function: uniswapV3MintCallback
+Gas Used: 24808
+Params: [86735, 64056, '0x0e37566fee53a8184f86682e583d05cce520359c58133bc940abc26106645eae']
+Msg.value: 8540
+
+Function: uniswapV3MintCallback
+Gas Used: 24808
+Params: [52274, 96443, '0xa2fe8c9e6e1c1ca9918db4f696718eaaa74b1dccff862d3a0118dbc5d63db3cb']
+Msg.value: 3448
+
+Function: uniswapV3MintCallback
+Gas Used: 24808
+Params: [75527, 45126, '0xf9220b4511050269f70a5c21c14d04a00cfba727f7e9884dc514a63ab8845212']
+Msg.value: 9419
+
+Function: uniswapV3MintCallback
+Gas Used: 24808
+Params: [86617, 32647, '0x37d62e7667a38e6eb86b15d271458d25b44cbcb177d7654b75ee867a968147e5']
+Msg.value: 6857
+
+Function: uniswapV3MintCallback
+Gas Used: 24820
+Params: [67573, 99050, '0x29def3b27304b2e8dff85c088ff32a2bf70f4aa7b4d5db64fb53b3493f4e57c4']
+Msg.value: 7960
+
+Function: swap0ForExact1
+Gas Used: 23739
+Params: ['0xa4cf042bad224681dd6ef753aaa6a7374b3b2f84', 78753, '0x218a9bd211543a4c1e2d8940ce38094b4f1cc789', 31927]
+Msg.value: 6706
+
+Function: swap0ForExact1
+Gas Used: 23739
+Params: ['0xea9db8689feaacf47c19cb331f013cb71f5a997c', 55906, '0xc9f81de6055b11a2c09ca8e1c54b41ecddf954c5', 69248]
+Msg.value: 123
+
+Function: swap0ForExact1
+Gas Used: 23739
+Params: ['0xfa774464c440bf74bc280734e0f2b31522f873e5', 41152, '0x03a8ea0c22bd9830bba88e8a59c9ab3176d191f8', 89131]
+Msg.value: 950
+
+Function: swap0ForExact1
+Gas Used: 23739
+Params: ['0x068748b47ab41b83142d025a8e21dc555598b96f', 78247, '0x30c2925750703cca4681aeab2d15fdb2d250d895', 14528]
+Msg.value: 5739
+
+Function: swapToHigherSqrtPrice
+Gas Used: 23612
+Params: ['0x6e44364e9cac256029250955fc40612912b863ff', 66646, '0xa1e8d864944ca6cfd8d52fcfa7881864dbbf604d']
+Msg.value: 1152
+
+Function: swapToHigherSqrtPrice
+Gas Used: 23612
+Params: ['0x466af258fefc5ab4ee9e2bf2a588daf464ed9f89', 68833, '0x7354fbb4024f43fcc6676e3d03272d32eaeaf475']
+Msg.value: 6517
+
+Function: swapToHigherSqrtPrice
+Gas Used: 23612
+Params: ['0x14ed1a4b881bf66c78c099c9160c1921b4dd02c5', 92590, '0x6f503f49e4c7e61f7a30d7eb46a249454309b5c1']
+Msg.value: 4559
+
+Function: mint
+Gas Used: 24796
+Params: ['0x3983cf04e3d7002eb5cc10852f0d92308892f46a', '0xc8661b8b7345b0bc99d3bec8f9f25f4bcf83ff0d', -31789086927416854874709940926911401127408632895352362240183828036951798207239, -51926249506475905315832855883142209033458146636438085682470013573057311261307, 39002]
+Msg.value: 8673
+
+Function: swap1ForExact0
+Gas Used: 23827
+Params: ['0x53bebd62b4129023ca51cd011d18ef587fbd7de4', 53462, '0x3e7cbaff902ec2794626f392d84185858dcf2ca6', 90905]
+Msg.value: 1501
+
+Function: swap1ForExact0
+Gas Used: 23827
+Params: ['0xd0225380868446dffb079afc54dd3fb2aa24845e', 46019, '0xb3fc57b670a46fde4add43afd9243a801f24e25b', 69936]
+Msg.value: 6382
+
+Function: swap1ForExact0
+Gas Used: 23839
+Params: ['0xdff730b6dbacbce25c3503a5de6057fda5f0bf44', 84865, '0x7f597605bcaefd117e4827b6b27d7539649fd402', 70137]
+Msg.value: 1744
+
+Function: swap1ForExact0
+Gas Used: 23839
+Params: ['0x9ffc43f10de6c3da5da336d37528d118a9c9ea5b', 66873, '0xd0c3cda465ea14c851c9114dbe3e26ee3d5ba975', 93039]
+Msg.value: 7675
+
+Function: swap1ForExact0
+Gas Used: 23827
+Params: ['0x09e73d616883818b56c99e9bfc83c615028f7094', 12390, '0x0f13d46754a64a7f12eb35bad5e271521701ae95', 97173]
+Msg.value: 7617
+
+Function: swapExact1For0
+Gas Used: 23790
+Params: ['0x9e27dace412e7dd591687ced155217c1e6a70d9b', 71945, '0x2c967dd0ac94e41bd41e12521abd2e984fee18da', 97412]
+Msg.value: 3144
+
+Function: swapExact0For1
+Gas Used: 23779
+Params: ['0x1aaf527677f391e7c7775ca05097c83b264847e3', 61197, '0xfa1cb263aac809a7d944e49be49342502e7b88aa', 80510]
+Msg.value: 1851
+
+Function: swapExact0For1
+Gas Used: 23791
+Params: ['0x2a797105230734b3876644096010dff6a7026445', 88563, '0x078b047a6a2c74419875cce41047017589922c9d', 92030]
+Msg.value: 6490
+
+Function: swapExact0For1
+Gas Used: 23779
+Params: ['0x2c6de1f01cbb2f36b955a10fc1522ec6762c36d2', 84412, '0xfc7890350ea6c82d8286a2f6b5f9019cf832c6c3', 7721]
+Msg.value: 7248
+

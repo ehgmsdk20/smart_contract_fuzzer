@@ -1,72 +1,19 @@
-import json
 import random
 from slither import Slither
-from brownie import accounts, project, network
 from slither.slither import SlitherError
-from brownie.network.state import TxHistory
+from brownie import accounts, network, project
 import os
-import glob
+import time
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import defaultdict
 from matplotlib.ticker import ScalarFormatter
+from brownie.network.state import TxHistory
 import subprocess
 import re
+import json
 
 output_base_folder = "./output"
-
-if not os.path.exists(output_base_folder):
-    os.makedirs(output_base_folder)
-
-def deploy_contract(contract_name):    
-    loaded_projects = project.get_loaded_projects()
-    if contract_name in loaded_projects:
-        proj = loaded_projects[contract_name]
-    else:
-        proj = project.load('.', name=contract_name)
-    proj.load_config()
-    Contract = getattr(proj, contract_name)
-    return Contract.deploy({'from': accounts[0]})
-
-def set_solc_version(contract_path):
-    with open(contract_path, 'r') as file:
-        content = file.read()
-    pragma_match = re.search(r'pragma\s+solidity\s+([^;]+);', content)
-    if pragma_match:
-        version = pragma_match.group(1).strip()
-        version = re.split(r'[<>=^]', version)[-1].strip()  # Extract exact version if specified
-        print(f"Setting solc version to {version}")
-        subprocess.run(['solc-select', 'install', version])
-        subprocess.run(['solc-select', 'use', version])
-    else:
-        raise Exception("No pragma solidity version found in contract.")
-
-def extract_functions(contract_path):
-    try:
-        set_solc_version(contract_path)
-        slither = Slither(contract_path)
-        contracts = slither.contracts
-        if not contracts:
-            print(f"No contracts found in {contract_path}")
-            return []
-        functions_per_contracts = {}
-        for contract in contracts:
-            functions = []
-            for func in contract.functions:
-                func_name = func.name
-                param_list = [(param.type, param.name) for param in func.parameters]
-                functions.append({
-                    'name': func_name, 
-                    'parameters': param_list, 
-                    'payable': func.payable,
-                    'view': func.view
-                })
-            functions_per_contracts[contract.name] = functions
-        return functions_per_contracts
-    except SlitherError as e:
-        print(f"Error while parsing the contract: {e}")
-        return {}
-
 
 
 def random_address():
@@ -109,7 +56,7 @@ def generate_test_cases(functions, num_cases=5):
                         params.append(random_bytes(length))
                     elif param_type == 'string':
                         params.append(random_string()) 
-                test_cases.append((func['name'], params, func['payable'], func['view']))
+                test_cases.append((func['name'], params, func['payable']))
     return test_cases
 
 def plot(gas_usages, output_folder, contract_name):
@@ -127,7 +74,7 @@ def plot(gas_usages, output_folder, contract_name):
         expected_gas_usage[func] = (bin_edges[max_bin_index], bin_edges[max_bin_index + 1])
 
     # Plot the data
-    plt.figure(figsize=(14, 7))
+    plt.figure(figsize=(30, 7))
 
     # Define number of subplots based on unique functions
     num_functions = len(function_gas_usage)
@@ -136,7 +83,7 @@ def plot(gas_usages, output_folder, contract_name):
         plt.hist(gas_usage, bins=20, alpha=0.75, label=f'{func} Gas Usage')
         plt.axvline(expected_gas_usage[func][0], color='red', linestyle='dashed', linewidth=2, label='Expected Gas Usage Start')
         plt.axvline(expected_gas_usage[func][1], color='blue', linestyle='dashed', linewidth=2, label='Expected Gas Usage End')
-        plt.title(f'{func.capitalize()} Function Gas Usage')
+        plt.title(f'{func.capitalize()}')
         plt.xlabel('Gas Used')
         plt.ylabel('Frequency')
 
@@ -164,7 +111,7 @@ def plot(gas_usages, output_folder, contract_name):
     percentage_exceeded = (num_exceeded_txs / total_txs) * 100 if total_txs > 0 else 0
     average_exceeded_ratio = np.mean(
         [tx['gas_used'] / expected_gas_usage[tx['function']][1] for tx in unexpected_conditions]
-    ) if num_exceeded_txs > 0 else 0
+    ) if num_exceeded_txs > 0 else 1
 
     # Save unexpected conditions to a file
     unexpected_file = os.path.join(output_folder, 'unexpected_condition.txt')
@@ -178,6 +125,85 @@ def plot(gas_usages, output_folder, contract_name):
             f.write(f"Msg.value: {condition.get('msg.value', 'N/A')}\n")
             f.write("\n")
     print(f"Unexpected conditions saved to {unexpected_file}")
+    return percentage_exceeded, average_exceeded_ratio
+
+
+def set_solc_version(contract_path):
+    with open(contract_path, 'r') as file:
+        content = file.read()
+    pragma_match = re.search(r'pragma\s+solidity\s+([^;]+);', content)
+    if pragma_match:
+        version = pragma_match.group(1).strip()
+        version = re.split(r'[<>=^]', version)[-1].strip()  # Extract exact version if specified
+        print(f"Setting solc version to {version}")
+        subprocess.run(['solc-select', 'install', version])
+        subprocess.run(['solc-select', 'use', version])
+    else:
+        raise Exception("No pragma solidity version found in contract.")
+
+
+def save_gas_usage(contract_name, constructor_args, gas_used, iteration):
+    output_dir = f"output/{contract_name}"
+    os.makedirs(output_dir, exist_ok=True)
+    file_path = os.path.join(output_dir, "gas_usage.txt")
+    
+    with open(file_path, "a") as file:
+        file.write(f"Iteration {iteration}\n")
+        file.write(f"Input values: {constructor_args}\n")
+        file.write(f"Gas used: {gas_used}\n\n")
+
+def get_contracts_info(contract_path):
+    try:
+        #set_solc_version(contract_path)
+        slither = Slither(contract_path)
+        contracts = slither.contracts
+        if not contracts:
+            print(f"No contracts found in {contract_path}")
+            return []
+        functions_per_contracts = {}
+        for contract in contracts:
+            functions = []
+            for func in contract.functions:
+                func_name = func.name
+                param_list = []
+                for param in func.parameters:
+                    try:
+                        param_type = param.type.type 
+                        param_list.append((param_type, param.name))
+                    except AttributeError:
+                        continue
+                if not func.view:
+                    functions.append({
+                        'name': func_name, 
+                        'parameters': param_list, 
+                        'payable': func.payable
+                    })
+            functions_per_contracts[contract.name] = functions
+        return functions_per_contracts
+    except SlitherError as e:
+        print(f"Error while parsing the contract: {e}")
+        return {}
+
+def deploy_contracts(proj, contracts_info, dev):
+    deployed_contracts = {}
+    
+    for contract_name, functions in contracts_info.items():
+        if contract_name not in proj:
+            print(f"Contract {contract_name} not found in project.")
+            continue
+
+        try:
+            contract = getattr(proj, contract_name)
+            tx = contract.deploy({'from': dev})
+            deployed_contracts[contract_name] = tx
+            gas_used = tx.tx.gas_used
+            print(f"Deployed {contract_name} at {tx.address} with gas used: {gas_used}")
+
+            
+        except Exception as e:
+            print(f"Error deploying {contract_name}: {e}")
+    
+    return deployed_contracts
 
 def fuzz_contract(contract, functions):
     error_logs = []
@@ -188,7 +214,7 @@ def fuzz_contract(contract, functions):
 
     for case in test_cases:
         value = random_int(0, 10000)
-        func_name, params, payable, view = case
+        func_name, params, payable = case
         try:
             func = getattr(contract, func_name)
             msg = {'from': accounts[1]}
@@ -199,15 +225,15 @@ def fuzz_contract(contract, functions):
             else:
                 tx = func(msg)
             
-            if not view:
-                gas_usages.append({
-                    "function": func_name,
-                    "params": params,
-                    "msg.sender": accounts[1].address,
-                    "msg.value": value,
-                    "gas_used": tx.gas_used,
-                    "transaction_hash": tx.txid
-                })
+
+            gas_usages.append({
+                "function": func_name,
+                "params": params,
+                "msg.sender": accounts[1].address,
+                "msg.value": value,
+                "gas_used": tx.gas_used,
+                "transaction_hash": tx.txid
+            })
         except Exception as e:
             tx = history[-1] if len(history) > 0 else None
             gas_usages.append({
@@ -229,34 +255,74 @@ def fuzz_contract(contract, functions):
             error_logs.append(error_log)
     return error_logs, gas_usages
 
+def plot_results(contract_eval, output_folder):
+    x = []
+    y = []
+    labels = []
+
+    for contract_name, values in contract_eval.items():
+        percentage_exceeded, average_exceeded_ratio = values[0], values[1]
+        x.append(percentage_exceeded)
+        y.append(average_exceeded_ratio)
+        if percentage_exceeded != 0:
+            labels.append(contract_name)
+        else:
+            labels.append("")
+    plt.figure(figsize=(10, 6))
+    plt.scatter(x, y)
+
+    for i, label in enumerate(labels):
+        plt.annotate(label, (x[i], y[i]))
+
+    plt.xlabel('Percentage Exceeded')
+    plt.ylabel('Average Exceeded Ratio')
+    plt.title('Contract Evaluation')
+
+    plot_path = os.path.join(output_folder, 'contract_evaluation_plot.png')
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    plt.savefig(plot_path)
+    print(f"Plot saved to {plot_path}")
+    plt.close()
+
 def main():
+    project_path = '.'  # Adjust this to your project's path
+    #set_solc_version(project_path)
+    contracts_info = get_contracts_info(project_path)
+
     if not network.is_connected():
-        network.connect('development') 
+        try:
+            network.connect('development')
+            time.sleep(1)  # Add a short delay to ensure the network is fully connected
+        except Exception as e:
+            print(f"Failed to connect to network: {e}")
+            return
 
-    contract_files = glob.glob("contracts/*.sol")
-    if not contract_files:
-        print("No contract files found. Exiting...")
+    dev = accounts[0]
+
+    try:
+        if not project.get_loaded_projects():
+            proj = project.load(os.path.basename(os.getcwd()))
+        else:
+            proj = project.get_loaded_projects()[0]
+    except Exception as e:
+        print(f"Failed to load project: {e}")
         return
-    for contract_file in contract_files:
-        contract_name = os.path.splitext(os.path.basename(contract_file))[0]
-        functions_per_contracts = extract_functions(contract_file)
-        for contract_name, functions in functions_per_contracts.items():
-            if not functions:
-                print(f"No functions extracted for {contract_name}. Skipping...")
-                continue
-            print(f"Testing contract: {contract_name}")
 
-            contract_output_folder = os.path.join(output_base_folder, contract_name)
-            if not os.path.exists(contract_output_folder):
-                os.makedirs(contract_output_folder)
-            error_output_file = os.path.join(contract_output_folder, "error_output.txt")
-            gas_usage_file = os.path.join(contract_output_folder, "gas_usage.txt")
 
-            try:
-                contract = deploy_contract(contract_name)
-                error_logs, gas_usages = fuzz_contract(contract, functions)
-                plot(gas_usages, contract_output_folder, contract_name)
-                
+    deployed_contracts = deploy_contracts(proj, contracts_info, dev)
+    contract_eval = {}
+    for contract_name, contract in deployed_contracts.items():
+        contract_output_folder = os.path.join(output_base_folder, contract_name)
+        if not os.path.exists(contract_output_folder):
+            os.makedirs(contract_output_folder)
+        error_output_file = os.path.join(contract_output_folder, "error_output.txt")
+        gas_usage_file = os.path.join(contract_output_folder, "gas_usage.txt")
+        try:
+            error_logs, gas_usages = fuzz_contract(contract, contracts_info[contract_name])
+            if gas_usage_file:
+                percentage_exceeded, average_exceeded_ratio = plot(gas_usages, contract_output_folder, contract_name)
+                contract_eval[contract_name] = [percentage_exceeded, average_exceeded_ratio]
                 with open(error_output_file, 'w') as f:
                     for log in error_logs:
                         f.write(json.dumps(log) + "\n")
@@ -266,8 +332,17 @@ def main():
                     for usage in gas_usages:
                         f.write(json.dumps(usage) + "\n")
                     print(f"Gas usage logs saved to {gas_usage_file}")
-            except Exception as e:
-                print(f"Deploying contract {contract_name} failed with {str(e)}")
+                    
+        except:
+            pass
+    reports_folder = os.path.join('.', 'reports')
+    plot_results(contract_eval, reports_folder)
+        
+    try:
+        network.disconnect()
+    except Exception as e:
+        print(f"Failed to disconnect network: {e}")
+
 
 if __name__ == "__main__":
     main()

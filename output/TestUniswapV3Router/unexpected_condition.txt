@@ -1,0 +1,18 @@
+Percentage of transactions exceeding expected gas usage: 7.50%
+Average exceeded gas usage ratio: 1.00
+
+Function: swapForExact1Multi
+Gas Used: 24538
+Params: ['0x09d4d92ebd85660c7ea9e64a4ddaf8cf2fd51b2b', '0x07cbdd5bda687d6cde8fc16e932634a1d39b185c', '0x40feaf3af7f3f8d1df1ba4ecd1c2d1bb3747e744', 70355]
+Msg.value: 8093
+
+Function: swapForExact1Multi
+Gas Used: 24538
+Params: ['0xcc0e726e64e6deeff67cfeb5d586cf40dd8a4201', '0x4c4cfbe9e5f15df142a5c9a27f37169398e63bd6', '0x8a6b21993e9a773d4256c7de41e67d88b162e05f', 70186]
+Msg.value: 6357
+
+Function: swapForExact1Multi
+Gas Used: 24538
+Params: ['0x4df9846e68912d2c29a59b97b631cf49a29edb7b', '0xcaac7c253094bf3f6d760c574679e5fcc89f6f87', '0x98c0f44e341c1b3cf0643c3accc1dbe0dc36db3a', 70938]
+Msg.value: 898
+

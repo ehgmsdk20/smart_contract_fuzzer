@@ -1,0 +1,63 @@
+Percentage of transactions exceeding expected gas usage: 20.00%
+Average exceeded gas usage ratio: 1.41
+
+Function: increaseFeeGrowthGlobal1X128
+Gas Used: 48876
+Params: [95976]
+Msg.value: 4994
+
+Function: slitherConstructorConstantVariables
+Gas Used: 48842
+Params: []
+Msg.value: 5109
+
+Function: slitherConstructorConstantVariables
+Gas Used: 48842
+Params: []
+Msg.value: 5994
+
+Function: moveToTick
+Gas Used: 48842
+Params: [-234054123780996351488837397056541028128008977621303085516386962332623100979]
+Msg.value: 1248
+
+Function: moveToTick
+Gas Used: 48842
+Params: [-33813536200394181894470210296247297438820040376488542380103766531386604880347]
+Msg.value: 1793
+
+Function: slitherConstructorVariables
+Gas Used: 48842
+Params: []
+Msg.value: 3384
+
+Function: slitherConstructorVariables
+Gas Used: 48842
+Params: []
+Msg.value: 5704
+
+Function: slitherConstructorVariables
+Gas Used: 48842
+Params: []
+Msg.value: 518
+
+Function: slitherConstructorVariables
+Gas Used: 48842
+Params: []
+Msg.value: 8792
+
+Function: increaseFeeGrowthGlobal0X128
+Gas Used: 48842
+Params: [6419]
+Msg.value: 5783
+
+Function: setPosition
+Gas Used: 48842
+Params: [-43121225218092335237040121920345851417616030197598804945663081027137308839940, 10510348686322132110667072937082455875058958228202384931880141742526815733036, 6713085437467555278903922777729386116355527609853459285658265635863293804722]
+Msg.value: 9499
+
+Function: setPosition
+Gas Used: 48842
+Params: [-32380339656012042194453101866263202925896671491316990060375764334298444731134, 50897014786351398080356774442577313140573971513080476786020930281679546932196, -34217328850011158490889677096024776458938598244972831522843200687510879857829]
+Msg.value: 6234
+

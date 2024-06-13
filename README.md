@@ -42,7 +42,7 @@ To use the smart contract fuzzer:
 
 2. Execute the fuzzer script:
     ```sh
-    brownie run scripts/fuzzer_test.py
+    brownie run scripts/fuzzer.py
     ```
 
 ## Project Structure
