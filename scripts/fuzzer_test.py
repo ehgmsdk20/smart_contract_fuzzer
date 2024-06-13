@@ -111,7 +111,7 @@ def plot(gas_usages, output_folder, contract_name):
     percentage_exceeded = (num_exceeded_txs / total_txs) * 100 if total_txs > 0 else 0
     average_exceeded_ratio = np.mean(
         [tx['gas_used'] / expected_gas_usage[tx['function']][1] for tx in unexpected_conditions]
-    ) if num_exceeded_txs > 0 else 0
+    ) if num_exceeded_txs > 0 else 1
 
     # Save unexpected conditions to a file
     unexpected_file = os.path.join(output_folder, 'unexpected_condition.txt')
@@ -125,6 +125,7 @@ def plot(gas_usages, output_folder, contract_name):
             f.write(f"Msg.value: {condition.get('msg.value', 'N/A')}\n")
             f.write("\n")
     print(f"Unexpected conditions saved to {unexpected_file}")
+    return percentage_exceeded, average_exceeded_ratio
 
 
 def set_solc_version(contract_path):
@@ -254,6 +255,36 @@ def fuzz_contract(contract, functions):
             error_logs.append(error_log)
     return error_logs, gas_usages
 
+def plot_results(contract_eval, output_folder):
+    x = []
+    y = []
+    labels = []
+
+    for contract_name, values in contract_eval.items():
+        percentage_exceeded, average_exceeded_ratio = values[0], values[1]
+        x.append(percentage_exceeded)
+        y.append(average_exceeded_ratio)
+        if percentage_exceeded != 0:
+            labels.append(contract_name)
+        else:
+            labels.append("")
+    plt.figure(figsize=(10, 6))
+    plt.scatter(x, y)
+
+    for i, label in enumerate(labels):
+        plt.annotate(label, (x[i], y[i]))
+
+    plt.xlabel('Percentage Exceeded')
+    plt.ylabel('Average Exceeded Ratio')
+    plt.title('Contract Evaluation')
+
+    plot_path = os.path.join(output_folder, 'contract_evaluation_plot.png')
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    plt.savefig(plot_path)
+    print(f"Plot saved to {plot_path}")
+    plt.close()
+
 def main():
     project_path = '.'  # Adjust this to your project's path
     #set_solc_version(project_path)
@@ -280,6 +311,7 @@ def main():
 
 
     deployed_contracts = deploy_contracts(proj, contracts_info, dev)
+    contract_eval = {}
     for contract_name, contract in deployed_contracts.items():
         contract_output_folder = os.path.join(output_base_folder, contract_name)
         if not os.path.exists(contract_output_folder):
@@ -288,25 +320,29 @@ def main():
         gas_usage_file = os.path.join(contract_output_folder, "gas_usage.txt")
         try:
             error_logs, gas_usages = fuzz_contract(contract, contracts_info[contract_name])
-            plot(gas_usages, contract_output_folder, contract_name)
-            
-            with open(error_output_file, 'w') as f:
-                for log in error_logs:
-                    f.write(json.dumps(log) + "\n")
-                print(f"Error logs saved to {error_output_file}")
+            if gas_usage_file:
+                percentage_exceeded, average_exceeded_ratio = plot(gas_usages, contract_output_folder, contract_name)
+                contract_eval[contract_name] = [percentage_exceeded, average_exceeded_ratio]
+                with open(error_output_file, 'w') as f:
+                    for log in error_logs:
+                        f.write(json.dumps(log) + "\n")
+                    print(f"Error logs saved to {error_output_file}")
 
-            with open(gas_usage_file, 'w') as f:
-                for usage in gas_usages:
-                    f.write(json.dumps(usage) + "\n")
-                print(f"Gas usage logs saved to {gas_usage_file}")
+                with open(gas_usage_file, 'w') as f:
+                    for usage in gas_usages:
+                        f.write(json.dumps(usage) + "\n")
+                    print(f"Gas usage logs saved to {gas_usage_file}")
+                    
         except:
             pass
-
-
+    reports_folder = os.path.join('.', 'reports')
+    plot_results(contract_eval, reports_folder)
+        
     try:
         network.disconnect()
     except Exception as e:
         print(f"Failed to disconnect network: {e}")
+
 
 if __name__ == "__main__":
     main()
